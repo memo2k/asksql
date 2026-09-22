@@ -13,7 +13,25 @@ it('returns the same instance from the container', function () {
 });
 
 it('merges the package config', function () {
-    expect(config('asksql.placeholder'))->toBe('default');
+    expect(config('asksql.anthropic.api_key'))->toBeNull();
+    expect(config('asksql.anthropic.api_version'))->toBe('2023-06-01');
+    expect(config('asksql.anthropic.model'))->toBe('claude-haiku-4-5');
+    expect(config('asksql.connection'))->toBeNull();
+    expect(config('asksql.allowed_tables'))->toBe([]);
+    expect(config('asksql.excluded_tables'))->toContain('asksql_questions');
+    expect(config('asksql.limits.max_rows'))->toBe(1000);
+});
+
+it('allows the host application to override package config', function () {
+    config([
+        'asksql.connection' => 'mysql',
+        'asksql.limits.max_rows' => 10,
+        'asksql.allowed_tables' => ['orders', 'products'],
+    ]);
+
+    expect(config('asksql.connection'))->toBe('mysql');
+    expect(config('asksql.limits.max_rows'))->toBe(10);
+    expect(config('asksql.allowed_tables'))->toBe(['orders', 'products']);
 });
 
 it('loads the package translations', function () {
