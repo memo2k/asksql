@@ -20,6 +20,20 @@ You can install the package via Composer:
 composer require memo2k/asksql
 ```
 
+Add your Anthropic key to the host application's `.env`. That is the only required setup; AskSQL uses the app's default database connection unless you override it.
+
+```env
+ANTHROPIC_API_KEY=
+
+# Optional
+# ASKSQL_ANTHROPIC_API_KEY=
+# ASKSQL_ANTHROPIC_MODEL=claude-haiku-4-5
+# ASKSQL_CONNECTION=mysql
+# ASKSQL_MAX_ROWS=1000
+```
+
+Publish `config/asksql.php` only when you need to change defaults (table allowlist, excluded tables, limits, or API version). `2023-06-01` is still Anthropic's current Messages API version.
+
 You may publish all of the package's resources at once:
 
 ```bash
