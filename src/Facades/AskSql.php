@@ -7,6 +7,8 @@ namespace AskSql\AskSql\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @method static \AskSql\AskSql\QueryResult ask(string $question)
+ *
  * @see \AskSql\AskSql\AskSql
  */
 class AskSql extends Facade
