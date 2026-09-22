@@ -22,9 +22,21 @@ Use this skill when a Laravel application needs to integrate the AskSQL package.
 - confirm the app is a Laravel project
 - inspect the target code paths where the package should be applied
 
-### 2. Apply the package's public API
+### 2. Install and configure
 
-Document how to integrate AskSQL here, replacing this placeholder with the integration steps for your package.
+- require `memo2k/asksql`
+- set `ANTHROPIC_API_KEY` in the host `.env` (or `ASKSQL_ANTHROPIC_API_KEY` if the app already uses Anthropic elsewhere)
+- do not put API keys in package or committed config files
+- leave `asksql.connection` unset to use the host default database connection
+- publish config only when the host needs an allowlist, extra excluded tables, or different limits:
+
+```bash
+php artisan vendor:publish --tag="asksql-config"
+```
+
+### 3. Apply the package's public API
+
+- read host values with `config('asksql.*')` after install; do not call `env()` in application code for these keys
 
 ## Rules, References, and Templates
 
@@ -32,10 +44,21 @@ Read before executing:
 
 - no additional resource files for this skill
 
+Minimum host `.env`:
+
+```env
+ANTHROPIC_API_KEY=
+```
+
+Optional overrides: `ASKSQL_CONNECTION`, `ASKSQL_ANTHROPIC_MODEL`, `ASKSQL_MAX_ROWS`. Anthropic `api_version` default `2023-06-01` is the current Messages API version.
+
 ## Examples
 
-- describe a representative integration scenario for AskSQL
+- A Laravel app installs AskSQL, sets `ANTHROPIC_API_KEY`, and queries its default database without publishing config.
+- A Laravel app publishes `asksql-config` and sets `allowed_tables` to `['orders', 'products']` so the model cannot see other tables.
 
 ## Anti-patterns
 
 - do not document package internals here; keep the skill focused on adoption in Laravel apps
+- do not hardcode Anthropic keys in `config/asksql.php` or vendor files
+- do not assume a demo store schema or a `text_to_sql_ai` database
