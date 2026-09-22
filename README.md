@@ -75,7 +75,21 @@ php artisan vendor:publish --tag="asksql-assets"
 
 ## Usage
 
-<!-- Add a basic usage example here. -->
+Ask a question about the host application's database. AskSQL inspects the schema, asks the model for a single read-only `SELECT`, checks that SQL, then runs it.
+
+```php
+use AskSql\AskSql\Facades\AskSql;
+
+$result = AskSql::ask('Which orders are still open?');
+
+if ($result->failed()) {
+    // $result->error
+}
+
+$result->sql;
+$result->explanation;
+$result->rows;
+```
 
 ## Changelog
 

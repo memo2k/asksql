@@ -36,7 +36,15 @@ php artisan vendor:publish --tag="asksql-config"
 
 ### 3. Apply the package's public API
 
-- read host values with `config('asksql.*')` after install; do not call `env()` in application code for these keys
+Call `AskSql\AskSql\Facades\AskSql::ask($question)`. It returns `AskSql\AskSql\QueryResult` with `sql`, `explanation`, `rows`, and `error`. Check `failed()` before using the rows.
+
+```php
+use AskSql\AskSql\Facades\AskSql;
+
+$result = AskSql::ask('Which orders are still open?');
+```
+
+Read host settings with `config('asksql.*')`. Do not call `env()` in application code for these keys. There is no package UI to install.
 
 ## Rules, References, and Templates
 
@@ -54,7 +62,8 @@ Optional overrides: `ASKSQL_CONNECTION`, `ASKSQL_ANTHROPIC_MODEL`, `ASKSQL_MAX_R
 
 ## Examples
 
-- A Laravel app installs AskSQL, sets `ANTHROPIC_API_KEY`, and queries its default database without publishing config.
+- A Laravel app installs AskSQL, sets `ANTHROPIC_API_KEY`, and calls `AskSql::ask('Which orders are still open?')` against its default database.
+- A controller returns `$result->rows` when `AskSql::ask($question)` does not fail.
 - A Laravel app publishes `asksql-config` and sets `allowed_tables` to `['orders', 'products']` so the model cannot see other tables.
 
 ## Anti-patterns
@@ -62,3 +71,4 @@ Optional overrides: `ASKSQL_CONNECTION`, `ASKSQL_ANTHROPIC_MODEL`, `ASKSQL_MAX_R
 - do not document package internals here; keep the skill focused on adoption in Laravel apps
 - do not hardcode Anthropic keys in `config/asksql.php` or vendor files
 - do not assume a demo store schema or a `text_to_sql_ai` database
+- do not add a Blade page or publish views unless the app already needs them; `AskSql::ask()` is the public API
