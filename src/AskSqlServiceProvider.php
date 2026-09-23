@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AskSql\AskSql;
 
-use AskSql\AskSql\Console\Commands\AskSqlCommand;
 use AskSql\AskSql\Contracts\SqlGenerator;
 use AskSql\AskSql\Generators\AnthropicSqlGenerator;
 use Illuminate\Support\ServiceProvider;
@@ -28,12 +27,6 @@ class AskSqlServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__.'/../routes/asksql.php');
-
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'asksql');
-
-        $this->loadTranslationsFrom(__DIR__.'/../lang', 'asksql');
-
         if (! $this->app->runningInConsole()) {
             return;
         }
@@ -41,25 +34,5 @@ class AskSqlServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/asksql.php' => config_path('asksql.php'),
         ], ['asksql', 'asksql-config']);
-
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/asksql'),
-        ], ['asksql', 'asksql-views']);
-
-        $this->publishes([
-            __DIR__.'/../lang' => $this->app->langPath('vendor/asksql'),
-        ], ['asksql', 'asksql-lang']);
-
-        $this->publishes([
-            __DIR__.'/../public' => public_path('vendor/asksql'),
-        ], ['asksql', 'asksql-assets']);
-
-        $this->publishesMigrations([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
-        ], ['asksql', 'asksql-migrations']);
-
-        $this->commands([
-            AskSqlCommand::class,
-        ]);
     }
 }

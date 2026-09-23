@@ -24,11 +24,6 @@ beforeEach(function () {
         $table->string('migration');
     });
 
-    Schema::create('asksql_questions', function (Blueprint $table) {
-        $table->id();
-        $table->string('question');
-    });
-
     DB::table('customers')->insert(['name' => 'Ada']);
     DB::table('orders')->insert(['customer_id' => 1, 'total' => 42]);
 });
@@ -44,8 +39,7 @@ it('describes visible tables, columns, foreign keys, and sample rows', function 
         ->toContain('PRIMARY KEY')
         ->toContain('FK: customer_id → customers.id')
         ->toContain('Ada')
-        ->not->toContain('Table: migrations')
-        ->not->toContain('Table: asksql_questions');
+        ->not->toContain('Table: migrations');
 });
 
 it('limits the prompt to the configured allowlist', function () {

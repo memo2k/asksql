@@ -18,7 +18,7 @@ it('merges the package config', function () {
     expect(config('asksql.anthropic.model'))->toBe('claude-haiku-4-5');
     expect(config('asksql.connection'))->toBeNull();
     expect(config('asksql.allowed_tables'))->toBe([]);
-    expect(config('asksql.excluded_tables'))->toContain('asksql_questions');
+    expect(config('asksql.excluded_tables'))->toContain('migrations');
     expect(config('asksql.limits.max_rows'))->toBe(1000);
 });
 
@@ -32,18 +32,4 @@ it('allows the host application to override package config', function () {
     expect(config('asksql.connection'))->toBe('mysql');
     expect(config('asksql.limits.max_rows'))->toBe(10);
     expect(config('asksql.allowed_tables'))->toBe(['orders', 'products']);
-});
-
-it('loads the package translations', function () {
-    expect(trans('asksql::messages.placeholder'))->toBe('AskSql placeholder translation.');
-});
-
-it('loads the package views', function () {
-    expect(view()->exists('asksql::placeholder'))->toBeTrue();
-});
-
-it('registers the artisan command', function () {
-    $this->artisan('asksql:placeholder')
-        ->expectsOutputToContain('AskSql placeholder command executed.')
-        ->assertSuccessful();
 });

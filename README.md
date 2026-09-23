@@ -34,43 +34,8 @@ ANTHROPIC_API_KEY=
 
 Publish `config/asksql.php` only when you need to change defaults (table allowlist, excluded tables, limits, or API version). `2023-06-01` is still Anthropic's current Messages API version.
 
-You may publish all of the package's resources at once:
-
-```bash
-php artisan vendor:publish --tag="asksql"
-```
-
-Or, you may publish each resource individually:
-
-### Publishing the Configuration File
-
 ```bash
 php artisan vendor:publish --tag="asksql-config"
-```
-
-### Publishing and Running the Migrations
-
-```bash
-php artisan vendor:publish --tag="asksql-migrations"
-php artisan migrate
-```
-
-### Publishing the Views
-
-```bash
-php artisan vendor:publish --tag="asksql-views"
-```
-
-### Publishing the Translations
-
-```bash
-php artisan vendor:publish --tag="asksql-lang"
-```
-
-### Publishing the Public Assets
-
-```bash
-php artisan vendor:publish --tag="asksql-assets"
 ```
 
 ## Usage

@@ -3,8 +3,6 @@ parameters:
     paths:
         - src
         - config
-        - database
-        - routes
     configDirectories:
         - config
     tmpDir: build/phpstan
