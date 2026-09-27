@@ -3,11 +3,11 @@
 </div>
 
 <p align="center">
-    <a href="https://packagist.org/packages/memo2k/asksql" target="_blank"><img src="https://img.shields.io/packagist/v/memo2k/asksql.svg?style=flat-square" alt="Packagist"></a>
-    <a href="https://packagist.org/packages/memo2k/asksql" target="_blank"><img src="https://img.shields.io/packagist/php-v/memo2k/asksql.svg?style=flat-square" alt="PHP from Packagist"></a>
-    <a href="https://packagist.org/packages/memo2k/asksql" target="_blank"><img src="https://badge.laravel.cloud/badge/memo2k/asksql?style=flat" alt="Laravel versions"></a>
-    <a href="https://github.com/memo2k/asksql/actions" target="_blank"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/memo2k/asksql/tests.yml?branch=master&label=Tests&style=flat-square"></a>
-    <a href="https://packagist.org/packages/memo2k/asksql" target="_blank"><img src="https://img.shields.io/packagist/dt/memo2k/asksql.svg?style=flat-square" alt="Total Downloads"></a>
+    <a href="https://packagist.org/packages/memo2k/asksql"><img src="https://img.shields.io/packagist/v/memo2k/asksql.svg?style=flat-square" alt="Packagist"></a>
+    <a href="https://packagist.org/packages/memo2k/asksql"><img src="https://img.shields.io/packagist/php-v/memo2k/asksql.svg?style=flat-square" alt="PHP from Packagist"></a>
+    <a href="https://packagist.org/packages/memo2k/asksql"><img src="https://badge.laravel.cloud/badge/memo2k/asksql?style=flat" alt="Laravel versions"></a>
+    <a href="https://github.com/memo2k/asksql/actions"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/memo2k/asksql/tests.yml?branch=master&label=Tests&style=flat-square"></a>
+    <a href="https://packagist.org/packages/memo2k/asksql"><img src="https://img.shields.io/packagist/dt/memo2k/asksql.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
 AI Text to SQL
