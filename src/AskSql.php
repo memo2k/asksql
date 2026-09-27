@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace AskSql\AskSql;
 
 use AskSql\AskSql\Contracts\SqlGenerator;
+use AskSql\AskSql\Support\ReadableNumbers;
 use AskSql\AskSql\Support\SchemaPrompt;
 use AskSql\AskSql\Support\SqlValidator;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AskSql
 {
@@ -16,10 +18,21 @@ class AskSql
         private readonly SchemaPrompt $schemaPrompt,
         private readonly SqlGenerator $sqlGenerator,
         private readonly SqlValidator $sqlValidator,
+        private readonly ReadableNumbers $readableNumbers,
     ) {}
 
     public function ask(string $question): QueryResult
     {
+        if ($this->questionIsTooLong($question)) {
+            return QueryResult::failure('The question is too long.');
+        }
+
+        if (RateLimiter::tooManyAttempts('asksql', $this->queriesPerHour())) {
+            return QueryResult::failure('Too many questions this hour. Please try again later.');
+        }
+
+        RateLimiter::hit('asksql', 3600);
+
         $generated = $this->sqlGenerator->generate($question, $this->schemaPrompt->build());
 
         if ($generated->failed()) {
@@ -35,7 +48,7 @@ class AskSql
         return QueryResult::success(
             $validated['sql'],
             $generated->explanation,
-            $this->rows($validated['sql']),
+            $this->readableNumbers->format($this->rows($validated['sql'])),
         );
     }
 
@@ -44,13 +57,72 @@ class AskSql
      */
     private function rows(string $sql): array
     {
-        $rows = [];
+        $connection = $this->connection();
+        $timeoutApplied = $this->applyStatementTimeout($connection);
 
-        foreach ($this->connection()->select($sql) as $row) {
-            $rows[] = (array) $row;
+        try {
+            $rows = [];
+
+            foreach ($connection->select($sql) as $row) {
+                $rows[] = (array) $row;
+            }
+
+            return $rows;
+        } finally {
+            if ($timeoutApplied) {
+                $this->clearStatementTimeout($connection);
+            }
+        }
+    }
+
+    private function questionIsTooLong(string $question): bool
+    {
+        $maxLength = (int) config('asksql.limits.max_question_length', 2000);
+
+        if ($maxLength < 1) {
+            $maxLength = 2000;
         }
 
-        return $rows;
+        return mb_strlen($question) > $maxLength;
+    }
+
+    private function queriesPerHour(): int
+    {
+        return max(0, (int) config('asksql.limits.queries_per_hour', 60));
+    }
+
+    private function applyStatementTimeout(Connection $connection): bool
+    {
+        $seconds = (int) config('asksql.limits.statement_timeout_seconds', 5);
+        $statement = $this->statementTimeoutSql($connection->getDriverName(), max(0, $seconds));
+
+        if ($statement === null || $seconds < 1) {
+            return false;
+        }
+
+        $connection->statement($statement);
+
+        return true;
+    }
+
+    private function clearStatementTimeout(Connection $connection): void
+    {
+        $statement = $this->statementTimeoutSql($connection->getDriverName(), 0);
+
+        if ($statement !== null) {
+            $connection->statement($statement);
+        }
+    }
+
+    private function statementTimeoutSql(string $driver, int $seconds): ?string
+    {
+        $milliseconds = $seconds * 1000;
+
+        return match ($driver) {
+            'mysql', 'mariadb' => 'SET SESSION MAX_EXECUTION_TIME = '.$milliseconds,
+            'pgsql' => "SET statement_timeout = '{$seconds}s'",
+            default => null,
+        };
     }
 
     private function connection(): Connection
