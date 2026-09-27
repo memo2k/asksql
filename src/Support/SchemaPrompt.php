@@ -4,28 +4,29 @@ declare(strict_types=1);
 
 namespace AskSql\AskSql\Support;
 
-use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 
 class SchemaPrompt
 {
     public function build(): string
     {
-        $schema = $this->describe(DB::connection($this->connectionName()));
-
+        $connection = DB::connection($this->connectionName());
+        $builder = $connection->getSchemaBuilder();
         $lines = [
-            "Database: {$schema['name']} ({$schema['dialect']})",
+            'Database: '.$connection->getDatabaseName().' ('.$this->dialect($connection->getDriverName()).')',
             'Only query tables listed below. Table names are exact.',
             '',
         ];
 
-        foreach ($schema['tables'] as $table) {
-            $lines[] = "Table: {$table['name']}";
+        foreach ($this->visibleTables($builder->getTables()) as $tableName) {
+            $lines[] = "Table: {$tableName}";
+            $primaryKey = $this->primaryKeyColumns($builder->getIndexes($tableName));
 
-            foreach ($table['columns'] as $column) {
-                $parts = [$column['name'].': '.$column['type']];
+            foreach ($builder->getColumns($tableName) as $column) {
+                $type = $column['type_name'] !== '' ? $column['type_name'] : $column['type'];
+                $parts = [$column['name'].': '.$type];
 
-                if ($column['primary']) {
+                if (in_array($column['name'], $primaryKey, true)) {
                     $parts[] = 'PRIMARY KEY';
                 }
 
@@ -36,53 +37,6 @@ class SchemaPrompt
                 $lines[] = '  - '.implode(', ', $parts);
             }
 
-            foreach ($table['foreign_keys'] as $foreignKey) {
-                $lines[] = "  - FK: {$foreignKey['column']} → {$foreignKey['references_table']}.{$foreignKey['references_column']}";
-            }
-
-            if ($table['sample_rows'] !== []) {
-                $encoded = json_encode($table['sample_rows'], JSON_UNESCAPED_UNICODE);
-                $lines[] = '  Sample rows: '.($encoded === false ? '[]' : $encoded);
-            }
-
-            $lines[] = '';
-        }
-
-        return implode("\n", $lines);
-    }
-
-    /**
-     * @return array{
-     *     name: string,
-     *     dialect: string,
-     *     tables: list<array{
-     *         name: string,
-     *         columns: list<array{name: string, type: string, nullable: bool, primary: bool}>,
-     *         foreign_keys: list<array{column: string, references_table: string, references_column: string}>,
-     *         sample_rows: list<array<string, mixed>>
-     *     }>
-     * }
-     */
-    private function describe(Connection $connection): array
-    {
-        $builder = $connection->getSchemaBuilder();
-        $tables = [];
-
-        foreach ($this->visibleTables($builder->getTables()) as $tableName) {
-            $primaryKey = $this->primaryKeyColumns($builder->getIndexes($tableName));
-            $columns = [];
-
-            foreach ($builder->getColumns($tableName) as $column) {
-                $columns[] = [
-                    'name' => $column['name'],
-                    'type' => $column['type_name'] !== '' ? $column['type_name'] : $column['type'],
-                    'nullable' => $column['nullable'],
-                    'primary' => in_array($column['name'], $primaryKey, true),
-                ];
-            }
-
-            $foreignKeys = [];
-
             foreach ($builder->getForeignKeys($tableName) as $foreignKey) {
                 foreach ($foreignKey['columns'] as $index => $column) {
                     $referencesColumn = $foreignKey['foreign_columns'][$index] ?? null;
@@ -91,27 +45,14 @@ class SchemaPrompt
                         continue;
                     }
 
-                    $foreignKeys[] = [
-                        'column' => $column,
-                        'references_table' => $foreignKey['foreign_table'],
-                        'references_column' => $referencesColumn,
-                    ];
+                    $lines[] = "  - FK: {$column} → {$foreignKey['foreign_table']}.{$referencesColumn}";
                 }
             }
 
-            $tables[] = [
-                'name' => $tableName,
-                'columns' => $columns,
-                'foreign_keys' => $foreignKeys,
-                'sample_rows' => $this->sampleRows($connection, $tableName),
-            ];
+            $lines[] = '';
         }
 
-        return [
-            'name' => $connection->getDatabaseName(),
-            'dialect' => $this->dialect($connection->getDriverName()),
-            'tables' => $tables,
-        ];
+        return implode("\n", $lines);
     }
 
     /**
@@ -170,20 +111,6 @@ class SchemaPrompt
         }
 
         return $columns;
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    private function sampleRows(Connection $connection, string $table): array
-    {
-        $rows = [];
-
-        foreach ($connection->table($table)->limit(2)->get() as $row) {
-            $rows[] = (array) $row;
-        }
-
-        return $rows;
     }
 
     private function connectionName(): ?string
