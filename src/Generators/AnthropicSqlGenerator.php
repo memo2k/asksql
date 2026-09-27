@@ -72,11 +72,18 @@ class AnthropicSqlGenerator implements SqlGenerator
         }
 
         $validated = $this->sqlValidator->validate($sql);
+        $error = $validated['error'] ?? null;
 
-        if (isset($validated['error'])) {
+        if (is_string($error)) {
             Log::error('AskSQL rejected generated SQL.');
 
-            return GeneratedSql::failure($validated['error']);
+            return GeneratedSql::failure($error);
+        }
+
+        $validatedSql = $validated['sql'] ?? null;
+
+        if (! is_string($validatedSql)) {
+            return GeneratedSql::failure('Only a single SELECT query is allowed.');
         }
 
         $explanation = $payload['explanation'] ?? '';
@@ -85,7 +92,7 @@ class AnthropicSqlGenerator implements SqlGenerator
             $explanation = '';
         }
 
-        return GeneratedSql::success($validated['sql'], $explanation);
+        return GeneratedSql::success($validatedSql, $explanation);
     }
 
     private function apiKey(): ?string

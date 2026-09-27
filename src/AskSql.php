@@ -38,15 +38,22 @@ class AskSql
         }
 
         $validated = $this->sqlValidator->validate((string) $generated->sql);
+        $error = $validated['error'] ?? null;
 
-        if (isset($validated['error'])) {
-            return QueryResult::failure($validated['error']);
+        if (is_string($error)) {
+            return QueryResult::failure($error);
+        }
+
+        $sql = $validated['sql'] ?? null;
+
+        if (! is_string($sql)) {
+            return QueryResult::failure('Only a single SELECT query is allowed.');
         }
 
         return QueryResult::success(
-            $validated['sql'],
+            $sql,
             $generated->explanation,
-            $this->rows($validated['sql']),
+            $this->rows($sql),
         );
     }
 
