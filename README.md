@@ -10,6 +10,10 @@
     <a href="https://packagist.org/packages/memo2k/asksql"><img src="https://img.shields.io/packagist/dt/memo2k/asksql.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
+<p align="center">
+    <img src=".github/2026-09-22%2020-05-13.gif" alt="AskSQL demo">
+</p>
+
 AI Text to SQL
 
 ## Installation
