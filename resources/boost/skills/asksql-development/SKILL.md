@@ -28,7 +28,8 @@ Use this skill when a Laravel application needs to integrate the AskSQL package.
 - set `ANTHROPIC_API_KEY` in the host `.env` (or `ASKSQL_ANTHROPIC_API_KEY` if the app already uses Anthropic elsewhere)
 - do not put API keys in package or committed config files
 - leave `asksql.connection` unset to use the host default database connection
-- publish config only when the host needs an allowlist, extra excluded tables, or different limits:
+- change limits, the model, and table lists through `ASKSQL_*` environment variables
+- publish config when the host needs to edit the PHP file, including `forbidden_schemas`:
 
 ```bash
 php artisan vendor:publish --tag="asksql-config"
@@ -58,7 +59,7 @@ Minimum host `.env`:
 ANTHROPIC_API_KEY=
 ```
 
-Optional overrides: `ASKSQL_CONNECTION`, `ASKSQL_ANTHROPIC_MODEL`, `ASKSQL_MAX_ROWS`. Anthropic `api_version` default `2023-06-01` is the current Messages API version.
+Optional overrides: `ASKSQL_ANTHROPIC_API_KEY`, `ASKSQL_ANTHROPIC_MODEL` (`claude-haiku-4-5`), `ASKSQL_ANTHROPIC_MAX_TOKENS` (`2048`), `ASKSQL_ANTHROPIC_API_VERSION` (`2023-06-01`, the current Messages API version id), `ASKSQL_ANTHROPIC_BASE_URL`, `ASKSQL_CONNECTION`, `ASKSQL_MAX_ROWS` (`1000`), `ASKSQL_MAX_QUESTION_LENGTH` (`2000`), `ASKSQL_QUERIES_PER_HOUR` (`60`), `ASKSQL_STATEMENT_TIMEOUT` (`5`), `ASKSQL_ALLOWED_TABLES` (comma-separated; empty exposes every table except excluded ones), `ASKSQL_EXCLUDED_TABLES` (comma-separated, added to the built-in list). The schema prompt lists tables, columns, and foreign keys, and does not include row values.
 
 ## Examples
 
