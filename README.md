@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-    <img src=".github/2026-09-22%2020-05-13.gif" alt="AskSQL demo" width="100%">
+    <img src=".github/demo.gif" alt="AskSQL demo" width="100%">
 </p>
 
 AI Text to SQL
