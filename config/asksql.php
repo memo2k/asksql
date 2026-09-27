@@ -44,14 +44,15 @@ return [
     |--------------------------------------------------------------------------
     |
     | Leave allowed_tables empty to expose every table except excluded_tables.
-    | Set an allowlist to expose only specific tables to the model.
+    | ASKSQL_ALLOWED_TABLES is a comma-separated allowlist, for example
+    | orders,products. ASKSQL_EXCLUDED_TABLES adds names to the list below.
     |
     */
 
-    'allowed_tables' => [
-        // 'orders',
-        // 'products',
-    ],
+    'allowed_tables' => array_values(array_filter(array_map(
+        trim(...),
+        explode(',', (string) env('ASKSQL_ALLOWED_TABLES', '')),
+    ))),
 
     'excluded_tables' => [
         'migrations',
@@ -64,6 +65,10 @@ return [
         'job_batches',
         'failed_jobs',
         'personal_access_tokens',
+        ...array_values(array_filter(array_map(
+            trim(...),
+            explode(',', (string) env('ASKSQL_EXCLUDED_TABLES', '')),
+        ))),
     ],
 
     'forbidden_schemas' => [
