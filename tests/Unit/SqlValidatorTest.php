@@ -69,6 +69,22 @@ it('rejects a forbidden keyword hidden inside a comment', function () {
     expect($result)->toHaveKey('error');
 });
 
+it('rejects a table outside the allowlist', function () {
+    config(['asksql.allowed_tables' => ['orders']]);
+
+    $result = app(SqlValidator::class)->validate('SELECT id FROM customers');
+
+    expect($result)->toBe(['error' => 'Query may only use tables from the configured schema.']);
+});
+
+it('allows a table on the allowlist', function () {
+    config(['asksql.allowed_tables' => ['orders']]);
+
+    $result = app(SqlValidator::class)->validate('SELECT id FROM orders');
+
+    expect($result)->toBe(['sql' => 'SELECT id FROM orders LIMIT 100']);
+});
+
 it('rejects forbidden schemas and excluded tables', function (string $sql) {
     $result = app(SqlValidator::class)->validate($sql);
 

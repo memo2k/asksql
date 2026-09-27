@@ -28,7 +28,7 @@ beforeEach(function () {
     DB::table('orders')->insert(['customer_id' => 1, 'total' => 42]);
 });
 
-it('describes visible tables, columns, foreign keys, and sample rows', function () {
+it('describes visible tables, columns, and foreign keys without row values', function () {
     $prompt = app(SchemaPrompt::class)->build();
 
     expect($prompt)
@@ -38,8 +38,10 @@ it('describes visible tables, columns, foreign keys, and sample rows', function 
         ->toContain('name: varchar')
         ->toContain('PRIMARY KEY')
         ->toContain('FK: customer_id → customers.id')
-        ->toContain('Ada')
-        ->not->toContain('Table: migrations');
+        ->not->toContain('Table: migrations')
+        ->not->toContain('Sample rows')
+        ->not->toContain('Ada')
+        ->not->toContain('42');
 });
 
 it('limits the prompt to the configured allowlist', function () {
