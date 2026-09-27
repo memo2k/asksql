@@ -68,6 +68,10 @@ class SqlValidator
             return $this->reject('Query may only use tables from the configured schema.');
         }
 
+        if ($this->referencesTableOutsideAllowlist($masked)) {
+            return $this->reject('Query may only use tables from the configured schema.');
+        }
+
         return ['sql' => $this->enforceLimit($sql)];
     }
 
@@ -131,6 +135,27 @@ class SqlValidator
         $sql = preg_replace("/'([^'\\\\]|\\\\.)*'/", "''", $sql) ?? $sql;
 
         return preg_replace('/"([^"\\\\]|\\\\.)*"/', '""', $sql) ?? $sql;
+    }
+
+    private function referencesTableOutsideAllowlist(string $sql): bool
+    {
+        $allowed = array_map(strtolower(...), $this->configuredList('asksql.allowed_tables'));
+
+        if ($allowed === []) {
+            return false;
+        }
+
+        if (preg_match_all('/\b(?:FROM|JOIN)\s+(?!\()[`"\[]?([A-Za-z_][A-Za-z0-9_]*)[`"\]]?/i', $sql, $matches) < 1) {
+            return false;
+        }
+
+        foreach ($matches[1] as $table) {
+            if (! in_array(strtolower($table), $allowed, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function referencesConfiguredIdentifier(string $sql, string $configKey): bool
