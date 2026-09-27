@@ -17,7 +17,7 @@
 AI Text to SQL
 
 > [!NOTE]
-> AskSQL only looks at the structure of the database. It does not fetch row values when it builds the prompt for Anthropic.
+> AskSQL sends the structure of the database to Anthropic. It does not fetch row values when it builds the prompt for Anthropic.
 
 ## Installation
 
