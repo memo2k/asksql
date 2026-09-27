@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AskSql\AskSql;
 
 use AskSql\AskSql\Contracts\SqlGenerator;
-use AskSql\AskSql\Support\ReadableNumbers;
 use AskSql\AskSql\Support\SchemaPrompt;
 use AskSql\AskSql\Support\SqlValidator;
 use Illuminate\Database\Connection;
@@ -18,7 +17,6 @@ class AskSql
         private readonly SchemaPrompt $schemaPrompt,
         private readonly SqlGenerator $sqlGenerator,
         private readonly SqlValidator $sqlValidator,
-        private readonly ReadableNumbers $readableNumbers,
     ) {}
 
     public function ask(string $question): QueryResult
@@ -48,7 +46,7 @@ class AskSql
         return QueryResult::success(
             $validated['sql'],
             $generated->explanation,
-            $this->readableNumbers->format($this->rows($validated['sql'])),
+            $this->rows($validated['sql']),
         );
     }
 
@@ -64,7 +62,13 @@ class AskSql
             $rows = [];
 
             foreach ($connection->select($sql) as $row) {
-                $rows[] = (array) $row;
+                $formatted = [];
+
+                foreach ((array) $row as $column => $value) {
+                    $formatted[$column] = $this->groupedNumber($value);
+                }
+
+                $rows[] = $formatted;
             }
 
             return $rows;
@@ -73,6 +77,28 @@ class AskSql
                 $this->clearStatementTimeout($connection);
             }
         }
+    }
+
+    private function groupedNumber(mixed $value): mixed
+    {
+        $text = match (true) {
+            is_int($value) => (string) $value,
+            is_float($value) && is_finite($value) => rtrim(rtrim(sprintf('%.10F', $value), '0'), '.'),
+            is_string($value) => $value,
+            default => null,
+        };
+
+        if (! is_string($text) || preg_match('/^(-?)(\d+)(\.\d+)?$/', $text, $matches) !== 1) {
+            return $value;
+        }
+
+        if (strlen($matches[2]) < 4 || str_starts_with($matches[2], '0')) {
+            return $value;
+        }
+
+        $grouped = preg_replace('/\B(?=(\d{3})+(?!\d))/', ' ', $matches[2]);
+
+        return $matches[1].(is_string($grouped) ? $grouped : $matches[2]).($matches[3] ?? '');
     }
 
     private function questionIsTooLong(string $question): bool
